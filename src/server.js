@@ -21,10 +21,9 @@ wsServer.on("connection", (socket) => {
   // server.js에서 emit 했던 3번째 argument에 있던 함수가 done이 됩니다.
   socket.on("enter_room", (roomName, done) => {
     socket.join(roomName);
-    setTimeout(() => {
-      // 이 function은 프론트엔드에서 실행 버튼을 눌러주는 것이라 보면됩니다.
-      done(); // 이 function은 보안 문제의 이유로 백엔드에서 실행시키지 않습니다.
-    }, 5000);
+    // 이 done function은 프론트엔드에서 실행 버튼을 눌러주는 것이라 보면됩니다.
+    done(); // 이 function은 보안 문제의 이유로 백엔드에서 실행시키지 않습니다.
+    socket.to(roomName).emit("welcome");
   });
 });
 // function handleConnection(socket) {
