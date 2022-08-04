@@ -11,8 +11,17 @@ let roomName;
 function addMessage(message) {
   const ul = room.querySelector("ul");
   const li = document.createElement("li");
-  li.innerText = "Someone joined!";
+  li.innerText = message;
   ul.appendChild(li);
+}
+
+function handleMessageSubmit(event) {
+  event.preventDefault();
+  const input = room.querySelector("input");
+  socket.emit("new_message", input.value, roomName, () => {
+    addMessage(`You: ${input.value}`);
+  });
+  input.value = "";
 }
 
 function showRoom() {
@@ -20,6 +29,8 @@ function showRoom() {
   room.hidden = false;
   const h3 = room.querySelector("h3");
   h3.innerText = `Room ${roomName}`;
+  const form = room.querySelector("form");
+  form.addEventListener("submit", handleMessageSubmit);
 }
 function backendDone(msg) {
   console.log(`The backend says: `, msg);
@@ -34,7 +45,7 @@ function handleRoomSubmit(event) {
   // 두번째 argument에는 보내고 싶은 payload가 들어갑니다. 원하는 만큼 보내고싶은 값을 넣어도 됩니다.
   // 세번째 argument에는 서버에서 호출하는 function이 들어갑니다.
   // 그 function이 가장 마지막 argument가 되어야합니다.
-  socket.emit("enter_room", { payload: input.value }, showRoom);
+  socket.emit("enter_room", input.value, showRoom);
   roomName = input.value;
   input.value = "";
 }
@@ -43,3 +54,9 @@ form.addEventListener("submit", handleRoomSubmit);
 socket.on("welcome", () => {
   addMessage("someone joined!");
 });
+
+socket.on("bye", () => {
+  addMessage("someone left ㅠㅠ");
+});
+
+socket.on("new_message", addMessage); // addMessage는 (msg) => {addMessage(msg)} 랑 똑같이 작동
