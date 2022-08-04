@@ -14,6 +14,8 @@ const httpServer = http.createServer(app);
 const wsServer = SocketIO(httpServer);
 
 wsServer.on("connection", (socket) => {
+  wsServer.socketsJoin("announcement"); // 모든 유저가 announcement 채널로 가게한다.
+  socket.nickname = "Anonymous";
   socket.onAny((event) => {
     console.log(`Socket Event: ${event}`);
   });
@@ -23,15 +25,18 @@ wsServer.on("connection", (socket) => {
     console.log(roomName);
     // 이 done function은 프론트엔드에서 실행 버튼을 눌러주는 것이라 보면됩니다.
     done(); // 이 function은 보안 문제의 이유로 백엔드에서 실행시키지 않습니다.
-    socket.to(roomName).emit("welcome");
+    socket.to(roomName).emit("welcome", socket.nickname);
   });
   socket.on("disconnecting", () => {
-    socket.rooms.forEach((room) => socket.to(room).emit("bye"));
+    socket.rooms.forEach((room) =>
+      socket.to(room).emit("bye", socket.nickname)
+    );
   });
   socket.on("new_message", (msg, room, done) => {
-    socket.to(room).emit("new_message", msg);
+    socket.to(room).emit("new_message", `${socket.nickname}: ${msg}`);
     done();
   });
+  socket.on("nickname", (nickname) => (socket.nickname = nickname));
 });
 // function handleConnection(socket) {
 //   console.log(socket);
