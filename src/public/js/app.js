@@ -68,4 +68,20 @@ socket.on("bye", (left) => {
   addMessage(`${left} left ㅠㅠ`);
 });
 
-socket.on("new_message", addMessage); // addMessage는 (msg) => {addMessage(msg)} 랑 똑같이 작동
+socket.on("new_message", addMessage); // 아래의 코드랑 똑같이 작동
+// socket.on("new_message", (msg) => addMessage(msg));
+// socket.on("room_change", console.log); // 콘솔 로그도 아래의 코드와 같이 사용할 수 있음
+// socket.on("room_change", (msg) => console.log(msg)); // 앞서 언급했듯이 위의 코드와 같은 의미를 가짐
+
+socket.on("room_change", (rooms) => {
+  const roomList = welcome.querySelector("ul");
+  roomList.innerHTML = "";
+  if (rooms.length === 0) {
+    return;
+  }
+  rooms.forEach((room) => {
+    const li = document.createElement("li");
+    li.innerText = room;
+    roomList.append(li);
+  });
+});

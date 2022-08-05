@@ -41,11 +41,15 @@ wsServer.on("connection", (socket) => {
     // 이 done function은 프론트엔드에서 실행 버튼을 눌러주는 것이라 보면됩니다.
     done(); // 이 function은 보안 문제의 이유로 백엔드에서 실행시키지 않습니다.
     socket.to(roomName).emit("welcome", socket.nickname);
+    wsServer.sockets.emit("room_change", publicRooms()); //
   });
   socket.on("disconnecting", () => {
     socket.rooms.forEach((room) =>
       socket.to(room).emit("bye", socket.nickname)
     );
+  });
+  socket.on("disconnect", () => {
+    wsServer.sockets.emit("room_change", publicRooms());
   });
   socket.on("new_message", (msg, room, done) => {
     socket.to(room).emit("new_message", `${socket.nickname}: ${msg}`);
