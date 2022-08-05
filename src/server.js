@@ -27,7 +27,10 @@ function publicRooms() {
   });
   return publicRooms;
 }
-
+function countRoom(roomName) {
+  // roomName을 찾을 수도 있지만 아닐 수도있기에, ?를 넣어준다.
+  return wsServer.sockets.adapter.rooms.get(roomName)?.size; // Set이기 때문에 size를 써준다.
+}
 wsServer.on("connection", (socket) => {
   // wsServer.socketsJoin("announcement"); // 모든 유저가 announcement 채널로 가게한다.
   socket.nickname = "Anonymous";
@@ -37,15 +40,15 @@ wsServer.on("connection", (socket) => {
   // server.js에서 emit 했던 3번째 argument에 있던 함수가 done이 됩니다.
   socket.on("enter_room", (roomName, done) => {
     socket.join(roomName);
-    console.log(roomName);
     // 이 done function은 프론트엔드에서 실행 버튼을 눌러주는 것이라 보면됩니다.
-    done(); // 이 function은 보안 문제의 이유로 백엔드에서 실행시키지 않습니다.
-    socket.to(roomName).emit("welcome", socket.nickname);
+    done(countRoom(roomName)); // 이 function은 보안 문제의 이유로 백엔드에서 실행시키지 않습니다.
+    socket.to(roomName).emit("welcome", socket.nickname, countRoom(roomName));
     wsServer.sockets.emit("room_change", publicRooms()); //
   });
   socket.on("disconnecting", () => {
-    socket.rooms.forEach((room) =>
-      socket.to(room).emit("bye", socket.nickname)
+    socket.rooms.forEach(
+      (room) =>
+        socket.to(room).emit("bye", socket.nickname, countRoom(room) - 1) //아직 방을 떠나지 않았기에 -1을 해준다
     );
   });
   socket.on("disconnect", () => {
